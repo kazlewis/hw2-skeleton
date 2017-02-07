@@ -1,5 +1,6 @@
 import glob
 import os
+import numpy as np
 from .utils import Atom, Residue, ActiveSite
 
 
@@ -42,6 +43,7 @@ def read_active_site(filepath):
 
     # open pdb file
     with open(filepath, "r") as f:
+        residue_numbers = []
         # iterate over each line in the file
         for line in f:
             if line[0:3] != 'TER':
@@ -63,10 +65,12 @@ def read_active_site(filepath):
 
                 # add the atom to the residue
                 residue.atoms.append(atom)
+                
 
             else:  # I've reached a TER card
-                active_site.residues.append(residue)
-
+                if residue.number not in residue_numbers:
+                    active_site.residues.append(residue)
+                    residue_numbers.append(residue.number)
     return active_site
 
 
