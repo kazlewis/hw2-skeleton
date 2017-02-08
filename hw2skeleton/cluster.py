@@ -58,7 +58,7 @@ def compute_similarity(site_a, site_b):
     return similarity
 
 
-def cluster_by_partitioning(active_sites, K):
+def cluster_by_partitioning(active_sites):
     """
     Cluster a given set of ActiveSite instances using a partitioning method.
 
