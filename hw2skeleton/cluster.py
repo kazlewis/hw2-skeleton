@@ -70,6 +70,7 @@ def cluster_by_partitioning(active_sites):
     
     # Define an initial number of clusters and maximum number of iterations
     # Don't break the test cases
+    K = 4
     if len(active_sites) < K:
         K = 3
     max_iterations = 500
@@ -152,9 +153,7 @@ def cluster_hierarchically(active_sites):
     Input: a list of ActiveSite instances
     Output: a list of clusterings
             (each clustering is a list of lists of Sequence objects)
-    """
-
-    
+    """    
     
     # Initialize the array that will hold active sites in their respective clusters
     cluster_array = [ [] for i in range(len(active_sites))]
