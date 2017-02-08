@@ -1,7 +1,7 @@
 # HW2 Skeleton
 
 [![Build
-Status](https://travis-ci.org/ucsf-bmi-203-2017/hw2-skeleton.svg?branch=master)](https://travis-ci.org/ucsf-bmi-203-2017/hw2-skeleton)
+Status](https://travis-ci.org/kazlewis/hw2-skeleton.svg?branch=master)](https://travis-ci.org/kazlewis/hw2-skeleton)
 
 Skeleton for clustering project.
 
@@ -21,13 +21,13 @@ The main file that you will need to modify is `cluster.py` and the corresponding
 .
 ├── README.md
 ├── data
-│   ...
+│   ...
 ├── hw2skeleton
-│   ├── __init__.py
-│   ├── __main__.py
-│   ├── cluster.py
-│   ├── io.py
-│   └── utils.py
+│   ├── __init__.py
+│   ├── __main__.py
+│   ├── cluster.py
+│   ├── io.py
+│   └── utils.py
 └── test
     ├── test_cluster.py
     └── test_io.py

@@ -3,9 +3,6 @@ from .io import read_active_sites, write_clustering, write_mult_clusterings
 from .cluster import cluster_by_partitioning, cluster_hierarchically
     
 
-if __name__ == "__main__":
-    main()
-
 
 # Some quick stuff to make sure the program is called correctly
 if len(sys.argv) < 4:

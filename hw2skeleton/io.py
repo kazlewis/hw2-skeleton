@@ -43,7 +43,9 @@ def read_active_site(filepath):
 
     # open pdb file
     with open(filepath, "r") as f:
+        # Keep track of the numbers of residues in the active site with a simple list
         residue_numbers = []
+        
         # iterate over each line in the file
         for line in f:
             if line[0:3] != 'TER':
@@ -68,9 +70,12 @@ def read_active_site(filepath):
                 
 
             else:  # I've reached a TER card
+            
+                # Only add the residue if it's not already contained in the active site
                 if residue.number not in residue_numbers:
                     active_site.residues.append(residue)
                     residue_numbers.append(residue.number)
+                    
     return active_site
 
 

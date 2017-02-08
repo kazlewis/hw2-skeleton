@@ -19,28 +19,6 @@ def sum_dist_Q(cluster_array):
     Q = Q/K
     return Q
 
-def sil_score(cluster_array):
-    """
-    Implementation of the silhouette score that looks to determine how well an active site is matched to its given cluster versus its neighbors.
-    """
-    
-    cluster_centers = [[]]
-    sil_score_avg = 0.0
-    
-    K = len(cluster_array)
-    
-    # Examine each cluster (total number of clusters = K)
-    for n in range(K):
-        for i in range(len(cluster_array[n])):
-            new_center = np.array([0.0, 0.0, 0.0, 0.0], ndmin=1)
-            # Looking within a cluster, 
-            for j in range(len(cluster_array[n])):
-                new_center += activesite_info(active_sites[j])
-                dist_sum += abs(compute_similarity(cluster_array[n][i],cluster_array[n][j]))
-        Q += dist_sum
-    Q = Q/K
-    return sil_score
-    
 
 def compute_similarity_bymatrix(info_a,info_b):
     """
@@ -80,7 +58,7 @@ def compute_similarity(site_a, site_b):
     return similarity
 
 
-def cluster_by_partitioning(active_sites):
+def cluster_by_partitioning(active_sites, K):
     """
     Cluster a given set of ActiveSite instances using a partitioning method.
 
@@ -91,10 +69,11 @@ def cluster_by_partitioning(active_sites):
     """
     
     # Define an initial number of clusters and maximum number of iterations
-    K = 3
+    # Don't break the test cases
+    if len(active_sites) < K:
+        K = 3
     max_iterations = 500
     
-    #random.seed(1)
     initial_clusters = random.sample(range(len(active_sites)), K)
     cluster_centers = [[]]
     cluster_assignments = np.zeros(shape = (len(active_sites)))
@@ -162,7 +141,7 @@ def cluster_by_partitioning(active_sites):
                 cluster_array[j].append(active_sites[i])
     
     
-    print("the partioning algorithm [k-means] took " + str(iterations) + " iteration(s) to converge on a solution")
+    print("the partioning algorithm [k-means] took " + str(iterations) + " iteration(s) to converge on a solution with K = " + str(K))
     return cluster_array
 
 
@@ -175,9 +154,6 @@ def cluster_hierarchically(active_sites):
             (each clustering is a list of lists of Sequence objects)
     """
 
-    # Place each active site into its own cluster
-    iterations = 0
-    max_iterations = 500
     
     
     # Initialize the array that will hold active sites in their respective clusters
@@ -187,10 +163,11 @@ def cluster_hierarchically(active_sites):
     for i in range(len(cluster_array)):
         cluster_array[i].append(active_sites[i])
 
+    # Some parameters to set up the loop and keep track of iterations, as well as when to stop
     converged = False
     Q = math.inf
-    #Q_prev = math.inf
     Q_ratio_prev = 0
+    iterations = 0
 
     while not converged:
         # Some initial stuff to make sure that join criteria aren't broken

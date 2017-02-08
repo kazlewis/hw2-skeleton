@@ -1,7 +1,6 @@
 # Some utility classes to represent a PDB structure
-# Also included is a python script to calculate the area of a 3d polygon
-# Script taken from http://stackoverflow.com/questions/12642256/python-find-area-of-polygon-from-xyz-coordinates
-# Lastly included is a function to generate a matrix of information about a given active site
+# Also included is a python script to calculate the area of a 3d polygon (source below)
+# Lastly included is a function to generate a normalized matrix of information about a given active site
 
 import numpy as np
 import math
@@ -62,7 +61,8 @@ def unit_normal(a, b, c):
     magnitude = (x**2 + y**2 + z**2)**.5
     return (x/magnitude, y/magnitude, z/magnitude)
 
-#area of polygon poly
+# Functino to determine area of a polygon
+# Script taken from http://stackoverflow.com/questions/12642256/python-find-area-of-polygon-from-xyz-coordinates
 def poly_area(poly):
     if len(poly) < 3: # not a plane - no area
         return 0
@@ -78,30 +78,19 @@ def poly_area(poly):
     result = np.dot(total, unit_normal(poly[0], poly[1], poly[2]))
     return abs(result/2)
 
-#def activesite_vol(site):
-#    if type(site) != ActiveSite:
-#        raise IOError("Not a valid active site.")
-#    residue_vol_array = np.array([0.0, 0.0, 0.0], ndmin=2)
-#    for index, all_residues in enumerate(site.residues):
-#        #print(index)
-#        #print(all_residues.atoms)
-#        total_residue_coord = np.array([0.0, 0.0, 0.0], ndmin =2)
-#        for all_atoms in all_residues.atoms:
-#            total_residue_coord += np.array(all_atoms.coords)
-#        avg_residue_coord = total_residue_coord/(len(all_residues.atoms))
-#        residue_vol_array = np.concatenate((residue_vol_array,avg_residue_coord), axis=0)
-#    residue_vol_array = np.delete(residue_vol_array, 0, axis=0)
-#    return poly_area(residue_vol_array)
-
 def activesite_info(site):
+    """
+    A function that creates and returns a matrix that stores the following info about an active site
+       approximate volume of the active site    
+       weighted effects of charged residues on active site centroid    
+       weighted effects of polar residues on active site centroid
+       weighted effects of hydrophobic residues on active site centroid   
+    These effects are then normalized by the total contribution of all properties
+    """
     if type(site) != ActiveSite:
         raise IOError("Not a valid active site.")
         
-    # Create a matrix that stores the following info
-    #   approximate volume of the active site    
-    #   weighted effects of charged residues on active site centroid    
-    #   weighted effects of polar residues on active site centroid
-    #   weighted effects of hydrophobic residues on active site centroid
+
     
     info_matrix = np.array([0.0, 0, 0, 0])
     
@@ -153,52 +142,6 @@ def activesite_info(site):
     info_matrix[3] = (info_matrix[3] - m)/S            
                
     return info_matrix
-
-
-
-
-    
-#def num_residues(site):
-#    if type(site) != ActiveSite:
-#        raise IOError("Not a valid active site")
-#    return len(site.residues)
-#
-#def site_charge(site):
-#    charge = 0
-#    if type(site) != ActiveSite:
-#        raise IOError("Not a valid active site")
-#    for residue in site.residues:
-#        if residue.type in ("HIS","ARG","LYS"):
-#            charge += 1
-#        elif residue.type in ("ASP","GLU"):
-#            charge -= 1
-#    return charge
-#
-#def site_polarity(site):
-#    polarity = 0
-#    if type(site) != ActiveSite:
-#        raise IOError("Not a valid active site")
-#    for residue in site.residues:
-#        if residue.type in ("HIS","ARG","LYS","SER","THR","ASN","GLN","ASP","GLU"):
-#            polarity += 1
-#    return polarity
-#
-#def site_hydrophobicity(site):
-#    hydrophobicity = 0
-#    if type(site) != ActiveSite:
-#        raise IOError("Not a valid active site")
-#    for residue in site.residues:
-#        if residue.type in ("ALA","VAL","ILE","LEU","MET","PHE","TYR","TRP"):
-#            hydrophobicity += 1
-#    return hydrophobicity
-#
-#
-#
-#
-#
-#
-
-
 
 
 
