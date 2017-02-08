@@ -1,5 +1,47 @@
 from .utils import *
 
+def sum_dist_Q(cluster_array):
+    """
+    Implementation of the Sum of Distances method to determine how well a clustering algorithm has performed.
+    Looks at the sum of distances between objects within a cluster; the lower the sum, the better the clustering.
+    """
+    Q = 0.0
+    
+    K = len(cluster_array)
+    
+    # Examine each cluster (total number of clusters = K)
+    for n in range(K):
+        dist_sum = 0.0
+        for i in range(len(cluster_array[n])):
+            for j in range(len(cluster_array[n])):
+                dist_sum += abs(compute_similarity(cluster_array[n][i],cluster_array[n][j]))
+        Q += dist_sum
+    Q = Q/K
+    return Q
+
+def sil_score(cluster_array):
+    """
+    Implementation of the silhouette score that looks to determine how well an active site is matched to its given cluster versus its neighbors.
+    """
+    
+    cluster_centers = [[]]
+    sil_score_avg = 0.0
+    
+    K = len(cluster_array)
+    
+    # Examine each cluster (total number of clusters = K)
+    for n in range(K):
+        for i in range(len(cluster_array[n])):
+            new_center = np.array([0.0, 0.0, 0.0, 0.0], ndmin=1)
+            # Looking within a cluster, 
+            for j in range(len(cluster_array[n])):
+                new_center += activesite_info(active_sites[j])
+                dist_sum += abs(compute_similarity(cluster_array[n][i],cluster_array[n][j]))
+        Q += dist_sum
+    Q = Q/K
+    return sil_score
+    
+
 def compute_similarity_bymatrix(info_a,info_b):
     """
     Compute the similarity between two given ActiveSite instances.
@@ -49,7 +91,7 @@ def cluster_by_partitioning(active_sites):
     """
     
     # Define an initial number of clusters and maximum number of iterations
-    K = 4
+    K = 3
     max_iterations = 500
     
     #random.seed(1)
@@ -67,7 +109,7 @@ def cluster_by_partitioning(active_sites):
         cluster_centers.append(activesite_info(active_sites[initial_clusters[i]]))     
         
     # remove the blank first index – haven't found a more elegant solution than this yet
-    cluster_centers.pop(0)
+    del cluster_centers[0]
     
     # Set up parameters to check if a solution has been found; keep track of iterations    
     converged = False
@@ -103,10 +145,8 @@ def cluster_by_partitioning(active_sites):
         iterations += 1
         
         # Check to see if we've converged on a solution, otherwise update 'prev' and repeat
-        if np.array_equiv(cluster_assignments_prev, cluster_assignments):
+        if np.array_equiv(cluster_assignments_prev, cluster_assignments) or iterations > max_iterations:
             converged = True  
-        elif iterations > max_iterations:    
-            converged = True
         else:
             cluster_assignments_prev = cluster_assignments.copy()
         
@@ -122,7 +162,7 @@ def cluster_by_partitioning(active_sites):
                 cluster_array[j].append(active_sites[i])
     
     
-    print("the algorithm took " + str(iterations) + " iteration(s) to converge on a solution")
+    print("the partioning algorithm [k-means] took " + str(iterations) + " iteration(s) to converge on a solution")
     return cluster_array
 
 
@@ -135,6 +175,75 @@ def cluster_hierarchically(active_sites):
             (each clustering is a list of lists of Sequence objects)
     """
 
-    # Fill in your code here!
+    # Place each active site into its own cluster
+    iterations = 0
+    max_iterations = 500
+    
+    
+    # Initialize the array that will hold active sites in their respective clusters
+    cluster_array = [ [] for i in range(len(active_sites))]
+    
+    # Populate the cluster array; at the start, each active site gets its own cluster
+    for i in range(len(cluster_array)):
+        cluster_array[i].append(active_sites[i])
 
-    return []
+    converged = False
+    Q = math.inf
+    #Q_prev = math.inf
+    Q_ratio_prev = 0
+
+    while not converged:
+        # Some initial stuff to make sure that join criteria aren't broken
+        min_diff = math.inf
+        join_a = -1
+        join_b = -1
+        
+        # Loop through all pairwise cluster combinations
+        for i in range(len(cluster_array)):
+            for j in range(len(cluster_array)):
+                # Make sure you don't compare a cluster to itself
+                if i != j:    
+                    # Create new 'centroid active sites' for each cluster to use for comparison
+                    i_center = np.array([0.0, 0.0, 0.0, 0.0], ndmin=1)
+                    j_center = np.array([0.0, 0.0, 0.0, 0.0], ndmin=1)
+                    
+                    # Populate both new cluster centroids
+                    for x in range(len(cluster_array[i])):
+                        i_center += activesite_info(cluster_array[i][x])
+                    i_center = i_center / len(cluster_array[i])
+                    for y in range(len(cluster_array[j])):
+                        j_center += activesite_info(cluster_array[j][y])
+                    j_center = j_center / len(cluster_array[j])
+                    
+                    # Compute the difference between cluster centroids using compute_similarity()
+                    diff = compute_similarity_bymatrix(i_center,j_center)
+                    
+                    # If  the difference is the smallest observed, keep track of indicies of clusters to join
+                    if diff < min_diff:
+                        join_a = i
+                        join_b = j
+                        min_diff = diff
+                        
+        # All combinations have been compared, now join the two closest clusters
+        for i in range(len(cluster_array[join_b])):
+            cluster_array[join_a].append(cluster_array[join_b][i])
+        # Remove the old cluster that has since been joined
+        del cluster_array[join_b]
+        
+        # Update metrics to determine when to stop clustering
+        Q_prev = Q
+        Q = sum_dist_Q(cluster_array)
+        Q_ratio = Q/Q_prev
+        iterations += 1
+        
+        # If the ratio of improvement in Q starts to decline, or we only have one cluster left, then stop
+        if Q_ratio < Q_ratio_prev or len(cluster_array) == 1:  
+            converged = True
+        else:
+            Q_ratio_prev = Q_ratio
+            
+            
+    print("the hierarchical algorithm [nearest centroid] took " + str(iterations) + " iteration(s) to converge on a solution")
+    return cluster_array
+    
+  
